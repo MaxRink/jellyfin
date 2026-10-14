@@ -245,6 +245,18 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 var isAudioBook = audio is AudioBook;
 
+                if (!isAudioBook)
+                {
+                    // Some taggers store MusicBrainz-style credit roles in the artist
+                    // value (for example "Artist, Associated Performer, Composer").
+                    // Keep ordinary comma-containing artist names intact, but remove a
+                    // trailing sequence made entirely of known roles before creating
+                    // MusicArtist/People entries. This prevents generic person metadata
+                    // providers from receiving the whole credit string.
+                    albumArtists = MusicCreditNameNormalizer.NormalizeForAudio(albumArtists, isAudioBook);
+                    performers = MusicCreditNameNormalizer.NormalizeForAudio(performers, isAudioBook);
+                }
+
                 if (isAudioBook)
                 {
                     // For audiobooks: AlbumArtists/Performers = Author, NARRATOR tag = Narrator,
