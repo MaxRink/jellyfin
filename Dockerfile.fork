@@ -1,0 +1,25 @@
+# Reproducible amd64 overlay for the pinned Jellyfin 12.2 runtime.
+# The final stage keeps the official apphost, runtimeconfig, web assets,
+# FFmpeg and plugin layout; only source-built managed assemblies are replaced.
+FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+ENV DOTNET_CLI_HOME=/tmp/dotnet-home \
+    NUGET_PACKAGES=/root/.nuget/packages \
+    DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1 \
+    NUGET_XMLDOC_MODE=skip
+COPY . .
+RUN dotnet restore Jellyfin.Server/Jellyfin.Server.csproj \
+ && dotnet publish Jellyfin.Server/Jellyfin.Server.csproj \
+      -c Release -o /out --no-restore --self-contained false \
+      -p:UseAppHost=false -m:1
+
+FROM --platform=linux/amd64 ghcr.io/jellyfin/jellyfin:12.2@sha256:c3efa69a22f2691fc88d6bb035e87a8560e395a6047f062fb381c61c3185e8f5
+ARG SOURCE_COMMIT
+LABEL org.opencontainers.image.source="https://github.com/MaxRink/jellyfin" \
+      org.opencontainers.image.source-commit="$SOURCE_COMMIT" \
+      org.opencontainers.image.base="ghcr.io/jellyfin/jellyfin:12.2@sha256:c3efa69a22f2691fc88d6bb035e87a8560e395a6047f062fb381c61c3185e8f5" \
+      org.opencontainers.image.description="Jellyfin 12.2 fork build with conservative music credit-role normalization" \
+      org.opencontainers.image.targetframework="net10.0" \
+      org.opencontainers.image.platform="linux/amd64"
+# Preserve the official apphost/runtimeconfig, web, FFmpeg and plugins.
+COPY --from=build /out/*.dll /jellyfin/
