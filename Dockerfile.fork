@@ -1,4 +1,4 @@
-# Reproducible amd64 overlay for the pinned Jellyfin 12.2 runtime.
+# Reproducible amd64 overlay for the pinned Jellyfin 12.3 runtime.
 # The final stage keeps the official apphost, runtimeconfig, web assets,
 # FFmpeg and plugin layout; only source-built managed assemblies are replaced.
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
@@ -13,12 +13,12 @@ RUN dotnet restore Jellyfin.Server/Jellyfin.Server.csproj \
       -c Release -o /out --no-restore --self-contained false \
       -p:UseAppHost=false -m:1
 
-FROM ghcr.io/jellyfin/jellyfin:12.2@sha256:c3efa69a22f2691fc88d6bb035e87a8560e395a6047f062fb381c61c3185e8f5
+FROM ghcr.io/jellyfin/jellyfin:12.3@sha256:720ad28968e040f1ea049749f4ce546b28c7251244a6eb8aacf9147d8afbc24d
 ARG SOURCE_COMMIT
 LABEL org.opencontainers.image.source="https://github.com/MaxRink/jellyfin" \
       org.opencontainers.image.source-commit="$SOURCE_COMMIT" \
-      org.opencontainers.image.base="ghcr.io/jellyfin/jellyfin:12.2@sha256:c3efa69a22f2691fc88d6bb035e87a8560e395a6047f062fb381c61c3185e8f5" \
-      org.opencontainers.image.description="Jellyfin 12.2 fork build with conservative music credit-role normalization" \
+      org.opencontainers.image.base="ghcr.io/jellyfin/jellyfin:12.3@sha256:720ad28968e040f1ea049749f4ce546b28c7251244a6eb8aacf9147d8afbc24d" \
+      org.opencontainers.image.description="Jellyfin 12.3 fork build with conservative music credit-role normalization" \
       org.opencontainers.image.targetframework="net10.0" \
       org.opencontainers.image.platform="linux/amd64"
 # Preserve the official apphost/runtimeconfig, web, FFmpeg and plugins.
